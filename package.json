@@ -1,0 +1,16 @@
+{
+  "name": "facebook-masheen",
+  "version": "1.0.0",
+  "description": "program to interact with facebook",
+  "main": "facebook-masheen.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sean Devonport",
+  "license": "ISC",
+  "dependencies": {
+    "easymidi": "^1.0.1",
+    "eventsource": "^1.0.7",
+    "midi": "^0.9.5"
+  }
+}
