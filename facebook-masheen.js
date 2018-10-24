@@ -14,52 +14,7 @@ const readline = require('readline');
 // Set facebook sharing and user access token
 const link_fb_livestream = process.argv[2];
 const user_access_token = process.argv[3];
-// console.log(link_fb_livestream)
 
-// FB streaming stuff
-// let link_fb_livestream;
-// let user_access_token;
-let reaction_counts = {
-  like : 0,
-  love : 0,
-  haha : 0,
-  wow : 0,
-  sad : 0,
-  angry: 0
-};
-
-// console.log(reaction_counts.like)
-let outport = new midi.output();
-// List port names:
-console.log("AVAILABLE MIDI PORTS:");
-for (let i=0;i<output.getPortCount();i++){
-  console.log(i+ ": " + outport.getPortName(i));
-}
-
-let output = new easymidi.Output('LoopBe Internal MIDI 1');
-
-// Setup facebook live stream
-
-// let source_comments = new EventSource("https://streaming-graph.facebook.com/" + 
-// "743884185976561/" +
-// "live_comments"+
-// "?access_token="+
-// "EAAHRdX1xLl4BANbpxTF0gPIJXEufvkI2ykkW9P4QU41aRcQrLrRluYFZAHAZCZAg901wvsZCQcZB2m5PssVVhI8N5cGmo5ZAiRZBAGtGsuECytHPEp81CPgsdWYeWHpi53ln0XkJtIO0O0uKAutBcSWD642rteOHZBEsczhQlSSAZBZBdI6WWk0H7ELZAvOApmWtq9XMLSfCEgFKQZDZD"+
-// "&comment_rate=ten_per_second");
-
-let source_comments = new EventSource("https://streaming-graph.facebook.com/" + 
-link_fb_livestream +
-"live_comments"+
-"?access_token="+
-user_access_token +
-"&comment_rate=ten_per_second");
-
-let source_reactions = new EventSource("https://streaming-graph.facebook.com/" + 
-link_fb_livestream +
-"live_reactions"+
-"?access_token="+
-user_access_token+
-"&comment_rate=ten_per_second");
 
 function trigger_note(chan,note=20){
   output.send('noteon', {
@@ -78,6 +33,7 @@ function trigger_note(chan,note=20){
 }
 
 function check_reaction(input){
+  // Currently the note is triggered as new reaction is received. Could probably be changed.
   let trigger_events = [];
 
   switch(input.key){
@@ -142,9 +98,43 @@ function check_reaction(input){
   return trigger_events;
 }
 
+// Setup MIDI port
+let outport = new midi.output();    
+// List port names:
+console.log("AVAILABLE MIDI PORTS:");             /* Need to add prompt selection so correct driver is chosen */
+for (let i=0;i<output.getPortCount();i++){
+  console.log(i+ ": " + outport.getPortName(i));
+}
+
+let output = new easymidi.Output('LoopBe Internal MIDI 1');
+
+// FB streaming stuff
+let reaction_counts = {
+  like : 0,
+  love : 0,
+  haha : 0,
+  wow : 0,
+  sad : 0,
+  angry: 0
+};
+
+// Setup facebook live stream
+let source_comments = new EventSource("https://streaming-graph.facebook.com/" + 
+link_fb_livestream +
+"live_comments"+
+"?access_token="+
+user_access_token +
+"&comment_rate=ten_per_second");
+
+let source_reactions = new EventSource("https://streaming-graph.facebook.com/" + 
+link_fb_livestream +
+"live_reactions"+
+"?access_token="+
+user_access_token+
+"&comment_rate=ten_per_second");
+
 source_reactions.onmessage = function(event) {
   // Send MIDI on receiving reaction message
-  // console.log(event)
   let reaction = JSON.parse(event.data)
 
   let trigger_events = [];
@@ -158,6 +148,6 @@ source_comments.onmessage = function(event) {
   // Send MIDI on receiving comment message  
   let comment = JSON.parse(event.data).message;
   console.log(comment)
-  trigger_note(120,10);
+  trigger_note(10); // Currently just triggers note on MIDI channel 10
 };
 
