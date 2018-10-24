@@ -11,6 +11,11 @@ const midi = require('midi');
 const easymidi = require('easymidi');
 const readline = require('readline');
 
+// Set facebook sharing and user access token
+const link_fb_livestream = process.argv[2];
+const user_access_token = process.argv[3];
+// console.log(link_fb_livestream)
+
 // FB streaming stuff
 // let link_fb_livestream;
 // let user_access_token;
@@ -25,23 +30,35 @@ let reaction_counts = {
 
 // console.log(reaction_counts.like)
 let outport = new midi.output();
-console.log(outport.getPortName(5));
-let output = new easymidi.Output('LoopBe Internal MIDI 5');
+// List port names:
+console.log("AVAILABLE MIDI PORTS:");
+for (let i=0;i<output.getPortCount();i++){
+  console.log(i+ ": " + outport.getPortName(i));
+}
+
+let output = new easymidi.Output('LoopBe Internal MIDI 1');
 
 // Setup facebook live stream
 
+// let source_comments = new EventSource("https://streaming-graph.facebook.com/" + 
+// "743884185976561/" +
+// "live_comments"+
+// "?access_token="+
+// "EAAHRdX1xLl4BANbpxTF0gPIJXEufvkI2ykkW9P4QU41aRcQrLrRluYFZAHAZCZAg901wvsZCQcZB2m5PssVVhI8N5cGmo5ZAiRZBAGtGsuECytHPEp81CPgsdWYeWHpi53ln0XkJtIO0O0uKAutBcSWD642rteOHZBEsczhQlSSAZBZBdI6WWk0H7ELZAvOApmWtq9XMLSfCEgFKQZDZD"+
+// "&comment_rate=ten_per_second");
+
 let source_comments = new EventSource("https://streaming-graph.facebook.com/" + 
-"743884185976561/" +
+link_fb_livestream +
 "live_comments"+
 "?access_token="+
-"EAAHRdX1xLl4BANbpxTF0gPIJXEufvkI2ykkW9P4QU41aRcQrLrRluYFZAHAZCZAg901wvsZCQcZB2m5PssVVhI8N5cGmo5ZAiRZBAGtGsuECytHPEp81CPgsdWYeWHpi53ln0XkJtIO0O0uKAutBcSWD642rteOHZBEsczhQlSSAZBZBdI6WWk0H7ELZAvOApmWtq9XMLSfCEgFKQZDZD"+
+user_access_token +
 "&comment_rate=ten_per_second");
 
 let source_reactions = new EventSource("https://streaming-graph.facebook.com/" + 
-"743884185976561/" +
+link_fb_livestream +
 "live_reactions"+
 "?access_token="+
-"EAAHRdX1xLl4BANbpxTF0gPIJXEufvkI2ykkW9P4QU41aRcQrLrRluYFZAHAZCZAg901wvsZCQcZB2m5PssVVhI8N5cGmo5ZAiRZBAGtGsuECytHPEp81CPgsdWYeWHpi53ln0XkJtIO0O0uKAutBcSWD642rteOHZBEsczhQlSSAZBZBdI6WWk0H7ELZAvOApmWtq9XMLSfCEgFKQZDZD"+
+user_access_token+
 "&comment_rate=ten_per_second");
 
 function trigger_note(chan,note=20){
@@ -61,107 +78,85 @@ function trigger_note(chan,note=20){
 }
 
 function check_reaction(input){
-  let trigger_event = "NA";
-  // console.log(input)
-  // console.log(reaction_counts)
+  let trigger_events = [];
+
   switch(input.key){
     case 'LIKE':
       // Check if values are the same, if not record that event must play
       if (input.value != reaction_counts.like){
-        // console.log("in likes")
-        // console.log("old: " + reaction_counts.like);
         reaction_counts.like = input.value;
-        // console.log("new: " + reaction_counts.like);
-        trigger_event = 'LIKE';
+        trigger_events.push('LIKE');
+        // trigger_event = 'LIKE';
         console.log("got like")
         trigger_note(0);
       }
       break;
     case 'LOVE':
       if (input.value != reaction_counts.love){
-        // console.log("in loves")
-        // console.log("old: " + reaction_counts.love);
         reaction_counts.love = input.value;
-        // console.log("new: " + reaction_counts.love);
-        trigger_event = 'LOVE';
+        trigger_events.push('LOVE');
+        // trigger_event = 'LOVE';
         console.log("got Love")
         trigger_note(1);
       }
-      // trigger_note();
       break;
     case 'HAHA':
       if (input.value != reaction_counts.haha){
         reaction_counts.haha = input.value;
-        trigger_event = 'HAHA';  
+        // trigger_event = 'HAHA'; 
+        trigger_events.push('HAHA'); 
         console.log("got haha") 
         trigger_note(2);   
       }
-      // trigger_note();
       break;
     case 'WOW':
       if (input.value != reaction_counts.wow){
         reaction_counts.wow = input.value;
-        trigger_event = 'WOW';   
+        // trigger_event = 'WOW';   
+        trigger_events.push('WOW');
         console.log("got wow")     
         trigger_note(3);
       }
-      // trigger_note();
       break;
     case 'SAD':
       if (input.value != reaction_counts.sad){
         reaction_counts.sad = input.value;
-        trigger_event = 'SAD'; 
+        // trigger_event = 'SAD'; 
+        trigger_events.push('SAD');
         console.log("got sad")  
         trigger_note(4);     
       }
       break;
     case 'ANGRY':
       if (input.value != reaction_counts.angry){
-        // console.log("in angry")
-        // console.log("old: " + reaction_counts.angry);
-        // console.log("new val " + input.value)
         reaction_counts.angry = input.value;
-        // console.log("new: " + reaction_counts.angry);
-        // reaction_counts.angry = input.value;
-        trigger_event = 'ANGRY'; 
+        // trigger_event = 'ANGRY';
+        trigger_events.push('ANGRY'); 
         console.log("got angry")  
         trigger_note(5);     
       }
-      // trigger_note();
       break;
     default:
       break;
   }
-  return trigger_event;
+  return trigger_events;
 }
 
 source_reactions.onmessage = function(event) {
-  // Do something with event.message for example
-  // Send MIDI
+  // Send MIDI on receiving reaction message
   // console.log(event)
   let reaction = JSON.parse(event.data)
-  // console.log(reaction)
-  let trigger_event = "NA"
-  // Parse reaction
-  // console.log(reaction)
-  console.log("reaction counts")
-  console.log(reaction_counts)
 
+  let trigger_events = [];
+  // Parse reaction
   reaction.reaction_stream.map((x,i)=>{
-    console.log(i)
-    trigger_event = check_reaction(x)
+    trigger_events = check_reaction(x)
   })
-  console.log(reaction_counts)
 };
 
 source_comments.onmessage = function(event) {
-  // Do something with event.message for example
-  // Send MIDI
-  // console.log(event.data)
-  let data = event.data;
-  console.log(data)
-  // console.log(data)
-  let comment = JSON.parse(data).message;
+  // Send MIDI on receiving comment message  
+  let comment = JSON.parse(event.data).message;
   console.log(comment)
   trigger_note(120,10);
 };
