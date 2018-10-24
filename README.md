@@ -15,5 +15,5 @@ npm install
 ## Run 
 
 ` 
-npm start
+node facebook-masheen.js <live-stream-id> <access-token>
 `
