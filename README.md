@@ -17,3 +17,9 @@ npm install
 ` 
 node facebook-masheen.js <live-stream-id> <access-token>
 `
+
+for example
+
+` 
+node facebook-masheen.js 2094787547501243/ EAAHRdX1xLl4BAJ1UHNLaNyPXGSoUoVZAkgDMEAuMWAByQuN3pHP9nIZAG6owPN1VRa8iNslywi4r2aP6ZCGLPYUtkMZAF0EvjPMTd7A...
+`
