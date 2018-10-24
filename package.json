@@ -4,6 +4,7 @@
   "description": "program to interact with facebook",
   "main": "facebook-masheen.js",
   "scripts": {
+    "start" : "node facebook-masheen.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sean Devonport",

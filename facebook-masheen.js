@@ -37,7 +37,7 @@ function check_reaction(input){
   This Could probably be changed.
   It does not account for when multiple reactions are received.
   i.e One note will play if reaction count goes from 1 - 5. This could be changed quite
-  easily  */
+  easily    */
   let trigger_events = [];
 
   switch(input.key){
@@ -103,14 +103,10 @@ function check_reaction(input){
 }
 
 // Setup MIDI port
-let outport = new midi.output();    
-// List port names:
-console.log("AVAILABLE MIDI PORTS:");             /* Need to add prompt selection so correct driver is chosen */
-for (let i=0;i<output.getPortCount();i++){
-  console.log(i+ ": " + outport.getPortName(i));
-}
-
-let output = new easymidi.Output('LoopBe Internal MIDI 1');
+console.log("AVAILABLE MIDI PORTS:");
+let available_outputs = easymidi.getOutputs();
+console.log(available_outputs)
+let loop_output = new easymidi.Output('LoopBe Internal MIDI 5');
 
 // FB streaming stuff
 let reaction_counts = {
