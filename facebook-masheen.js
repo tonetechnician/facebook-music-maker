@@ -106,7 +106,14 @@ function check_reaction(input){
 console.log("AVAILABLE MIDI PORTS:");
 let available_outputs = easymidi.getOutputs();
 console.log(available_outputs)
-let loop_output = new easymidi.Output('LoopBe Internal MIDI 5');
+// let loop_output = new easymidi.Output('LoopBe Internal MIDI 5');
+try{
+  let loop_output = new easymidi.Output(
+    available_outputs.filter(x=>x.startsWith("LoopBe"))
+  );
+} catch (e){
+  console.log("No LoopBe Found. \nPlease install LoopBe then try again")
+}
 
 // FB streaming stuff
 let reaction_counts = {
