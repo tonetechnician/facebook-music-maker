@@ -15,6 +15,15 @@ const readline = require('readline');
 const link_fb_livestream = process.argv[2];
 const user_access_token = process.argv[3];
 
+let reaction_counts = {
+  like : 0,
+  love : 0,
+  haha : 0,
+  wow : 0,
+  sad : 0,
+  angry: 0
+};
+
 // Setup MIDI port
 console.log("AVAILABLE MIDI PORTS:");
 let available_outputs = easymidi.getOutputs();
@@ -117,15 +126,6 @@ function check_reaction(input){
 }
 
 // FB streaming stuff
-let reaction_counts = {
-  like : 0,
-  love : 0,
-  haha : 0,
-  wow : 0,
-  sad : 0,
-  angry: 0
-};
-
 // Setup facebook live stream
 let source_comments = new EventSource("https://streaming-graph.facebook.com/" + 
 link_fb_livestream +
