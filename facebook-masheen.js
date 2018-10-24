@@ -15,16 +15,30 @@ const readline = require('readline');
 const link_fb_livestream = process.argv[2];
 const user_access_token = process.argv[3];
 
+// Setup MIDI port
+console.log("AVAILABLE MIDI PORTS:");
+let available_outputs = easymidi.getOutputs();
+console.log(available_outputs)
+let loop_output;
+// let loop_output = new easymidi.Output('LoopBe Internal MIDI 5');
+try{
+  loop_output = new easymidi.Output(
+    available_outputs.filter(x=>x.startsWith("LoopBe"))
+  );
+} catch (e){
+  loop_output = undefined;
+  console.log("No LoopBe Found. \nPlease install LoopBe then try again")
+}
 
 function trigger_note(chan,note=20){
-  output.send('noteon', {
+  loop_output.send('noteon', {
     note: note,
     velocity: 127,
     channel: chan
   });
   
   setTimeout(x=>{
-    output.send('noteoff', {
+    loop_output.send('noteoff', {
       note: note,
       velocity: 127,
       channel: chan
@@ -100,19 +114,6 @@ function check_reaction(input){
       break;
   }
   return trigger_events;
-}
-
-// Setup MIDI port
-console.log("AVAILABLE MIDI PORTS:");
-let available_outputs = easymidi.getOutputs();
-console.log(available_outputs)
-// let loop_output = new easymidi.Output('LoopBe Internal MIDI 5');
-try{
-  let loop_output = new easymidi.Output(
-    available_outputs.filter(x=>x.startsWith("LoopBe"))
-  );
-} catch (e){
-  console.log("No LoopBe Found. \nPlease install LoopBe then try again")
 }
 
 // FB streaming stuff
