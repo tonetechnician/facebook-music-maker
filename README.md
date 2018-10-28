@@ -6,8 +6,11 @@ It requires a [virtual MIDI driver](https://www.nerds.de/en/loopbe1.html) to int
 
 ## Installation
 
-Install [LoopBe1](https://www.nerds.de/en/loopbe1.html)
+1. Install [LoopBe1](https://www.nerds.de/en/loopbe1.html)
 
+2. Ensure you have the correct dependencies for [midi](https://www.npmjs.com/package/easymidi)
+
+3. 
 ` 
 npm install
 `
