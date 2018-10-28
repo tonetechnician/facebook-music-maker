@@ -9,12 +9,12 @@ const https = require('https')
 const EventSource = require('eventsource');
 const midi = require('midi');
 const easymidi = require('easymidi');
-const readline = require('readline');
 
 // Set facebook sharing and user access token
 const link_fb_livestream = process.argv[2];
 const user_access_token = process.argv[3];
 
+let speed_param_counter;
 let reaction_counts = {
   like : 0,
   love : 0,
@@ -23,6 +23,17 @@ let reaction_counts = {
   sad : 0,
   angry: 0
 };
+
+// MIDI Mapping parameters
+let midi_param = {
+  like : {type : 'note trigger', chan : 0, val : 20},
+  love : {type : 'note trigger', chan : 1, val : 20},
+  haha : {type : 'note trigger', chan : 2, val : 20},
+  wow : {type : 'note trigger', chan : 3, val : 20},
+  sad : {type : 'note trigger', chan : 4, val : 20},
+  angry : {type : 'note trigger', chan : 5, val : 20},
+  speed : 13 // 13 is 1.00 resolume video speed
+}
 
 // Setup MIDI port
 console.log("AVAILABLE MIDI PORTS:");
@@ -37,6 +48,16 @@ try{
 } catch (e){
   loop_output = undefined;
   console.log("No LoopBe Found. \nPlease install LoopBe then try again")
+}
+
+// NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+function scale(oldVal, oldMin=0, oldMax=100, newMin=0, newMax=127){
+  // let oldRange = oldMax-oldMin;
+  //let newRange = newMax-newMin;
+  let oldRange = 100;
+  let newRange = 127;
+  let scaledVal = (oldVal * newRange)/oldRange;
+  return scaledVal;
 }
 
 function trigger_note(chan,note=20){
@@ -54,6 +75,15 @@ function trigger_note(chan,note=20){
     });
   }, 20)
 }
+
+function trigger_control(chan,val=50,cc=0,){
+  loop_output.send('cc',{
+    controller : cc,
+    value : val,
+    channel : chan
+  })
+}
+
 
 function check_reaction(input){
   /* Currently the note is triggered as new reaction is received. 
@@ -152,10 +182,64 @@ source_reactions.onmessage = function(event) {
   })
 };
 
+
 source_comments.onmessage = function(event) {
   // Send MIDI on receiving comment message  
   let comment = JSON.parse(event.data).message;
   console.log(comment)
-  trigger_note(10); // Currently just triggers note on MIDI channel 10
+  let cc_value = comment.length%100;
+  // Change the speed parameter and initialize interval
+  midi_param.speed = Math.round(scale(cc_value));
+  // trigger_control(10,50midi_param.speed);
+  trigger_control(10,50,midi_param.speed);
+  // Set the timer
+  speed_param_counter = setInterval(check_control_speed,500);
 };
 
+// Enable the timer that performs step back to normal playback speed
+
+// speed_param_counter = setInterval(check_control_speed,500);
+
+function check_control_speed(){
+  // console.log(midi_param.speed)
+  if(midi_param.speed == 13){
+    console.log("clearing timer")
+    clearInterval(speed_param_counter);
+  }
+  else if(midi_param.speed > 13){
+    // console.log("here")
+    midi_param.speed--;
+    trigger_control(10,midi_param.speed);
+    // console.log(midi_param.speed)
+  } else if (midi_param.speed < 13){
+    midi_param.speed++;
+    trigger_control(10,midi_param.speed);
+    // console.log(midi_param.speed)
+  }
+}
+
+// Closing app stuff
+process.stdin.resume();//so the program will not close instantly
+
+function exitHandler(options, exitCode) {
+    if (options.cleanup) console.log('clean');
+    if (exitCode || exitCode === 0) {console.log("exitCode " + exitCode)};
+    if (options.exit) {
+      console.log("exiting app killing MIDI Port")
+      loop_output.close();
+      process.exit();
+    }
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{exit:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
