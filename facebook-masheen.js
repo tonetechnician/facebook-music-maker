@@ -5,10 +5,15 @@ Extracts reactions from live stream video and converts to MIDI.
 
 Author: Sean Devonport
 */
-const https = require('https')
+// const https = require('https')
 const EventSource = require('eventsource');
-const midi = require('midi');
+// const midi = require('midi');
 const easymidi = require('easymidi');
+const { fork } = require('child_process');
+
+const printerProcess = fork('print-masheen.js');  // This receives data and prints to a printer. Prevents event loop from getting gunked up
+
+printerProcess.send('created fork');
 
 // Set facebook sharing and user access token
 const link_fb_livestream = process.argv[2];
@@ -45,6 +50,7 @@ try{
   loop_output = new easymidi.Output(
     available_outputs.filter(x=>x.startsWith("LoopBe"))
   );
+  console.log("created connection to LoopBe1")
 } catch (e){
   loop_output = undefined;
   console.log("No LoopBe Found. \nPlease install LoopBe then try again")
@@ -102,6 +108,8 @@ function check_reaction(input){
 
         console.log("got like")
         trigger_note(0);
+        // Send to printer process
+        printerProcess.send(input.value);
       }
       break;
     case 'LOVE':
@@ -111,6 +119,8 @@ function check_reaction(input){
 
         console.log("got Love")
         trigger_note(1);
+        // Send to printer process
+        printerProcess.send(input.value);
       }
       break;
     case 'HAHA':
@@ -120,6 +130,8 @@ function check_reaction(input){
         trigger_events.push('HAHA'); 
         console.log("got haha") 
         trigger_note(2);   
+        // Send to printer process
+        printerProcess.send(input.value);
       }
       break;
     case 'WOW':
@@ -129,6 +141,8 @@ function check_reaction(input){
         trigger_events.push('WOW');
         console.log("got wow")     
         trigger_note(3);
+        // Send to printer process
+        printerProcess.send(input.value);
       }
       break;
     case 'SAD':
@@ -137,7 +151,9 @@ function check_reaction(input){
 
         trigger_events.push('SAD');
         console.log("got sad")  
-        trigger_note(4);     
+        trigger_note(4);   
+        // Send to printer process
+        printerProcess.send(input.value);  
       }
       break;
     case 'ANGRY':
@@ -147,6 +163,8 @@ function check_reaction(input){
         trigger_events.push('ANGRY'); 
         console.log("got angry")  
         trigger_note(5);     
+        // Send to printer process
+        printerProcess.send(input.value);
       }
       break;
     default:
