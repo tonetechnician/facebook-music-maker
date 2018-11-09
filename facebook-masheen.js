@@ -13,7 +13,7 @@ const { fork } = require('child_process');
 
 const printerProcess = fork('print-masheen.js');  // This receives data and prints to a printer. Prevents event loop from getting gunked up
 
-printerProcess.send('created fork');
+// printerProcess.send('created fork');
 
 // Set facebook sharing and user access token
 const link_fb_livestream = process.argv[2];
@@ -105,11 +105,10 @@ function check_reaction(input){
       if (input.value != reaction_counts.like){
         reaction_counts.like = input.value;
         trigger_events.push('LIKE');
-
-        console.log("got like")
         trigger_note(0);
         // Send to printer process
         printerProcess.send(input.value);
+        console.log("got like")
       }
       break;
     case 'LOVE':
@@ -117,10 +116,10 @@ function check_reaction(input){
         reaction_counts.love = input.value;
         trigger_events.push('LOVE');
 
-        console.log("got Love")
         trigger_note(1);
         // Send to printer process
         printerProcess.send(input.value);
+        console.log("got Love")
       }
       break;
     case 'HAHA':
@@ -128,10 +127,11 @@ function check_reaction(input){
         reaction_counts.haha = input.value;
 
         trigger_events.push('HAHA'); 
-        console.log("got haha") 
+
         trigger_note(2);   
         // Send to printer process
         printerProcess.send(input.value);
+        console.log("got haha") 
       }
       break;
     case 'WOW':
@@ -139,10 +139,11 @@ function check_reaction(input){
         reaction_counts.wow = input.value;
 
         trigger_events.push('WOW');
-        console.log("got wow")     
+    
         trigger_note(3);
         // Send to printer process
         printerProcess.send(input.value);
+        console.log("got wow") 
       }
       break;
     case 'SAD':
@@ -150,10 +151,11 @@ function check_reaction(input){
         reaction_counts.sad = input.value;
 
         trigger_events.push('SAD');
-        console.log("got sad")  
+
         trigger_note(4);   
         // Send to printer process
         printerProcess.send(input.value);  
+        console.log("got sad")  
       }
       break;
     case 'ANGRY':
@@ -161,10 +163,11 @@ function check_reaction(input){
         reaction_counts.angry = input.value;
 
         trigger_events.push('ANGRY'); 
-        console.log("got angry")  
+ 
         trigger_note(5);     
         // Send to printer process
         printerProcess.send(input.value);
+        console.log("got angry") 
       }
       break;
     default:
@@ -209,9 +212,12 @@ source_comments.onmessage = function(event) {
   // Change the speed parameter and initialize interval
   midi_param.speed = Math.round(scale(cc_value));
   // trigger_control(10,50midi_param.speed);
-  trigger_control(10,50,midi_param.speed);
+  trigger_control(10,midi_param.speed,0);
   // Set the timer
+  // if(speed_param_counter == undefined){
   speed_param_counter = setInterval(check_control_speed,500);
+  // }
+
 };
 
 // Enable the timer that performs step back to normal playback speed
@@ -221,17 +227,17 @@ source_comments.onmessage = function(event) {
 function check_control_speed(){
   // console.log(midi_param.speed)
   if(midi_param.speed == 13){
-    console.log("clearing timer")
     clearInterval(speed_param_counter);
+    console.log("clearing timer")
   }
   else if(midi_param.speed > 13){
     // console.log("here")
     midi_param.speed--;
-    trigger_control(10,midi_param.speed);
+    trigger_control(10,midi_param.speed,0);
     // console.log(midi_param.speed)
   } else if (midi_param.speed < 13){
     midi_param.speed++;
-    trigger_control(10,midi_param.speed);
+    trigger_control(10,midi_param.speed,0);
     // console.log(midi_param.speed)
   }
 }
